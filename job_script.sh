@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # ---------- How to use Scitas ----------
 # 1. Connect to the cluster: ssh -X <username>@<cluster>.epfl.ch in the terminal (-X if you want GPU)
 # 2. write a script in a bash file
@@ -5,7 +7,6 @@
 
 # ---------- Commands to set up SLURM environment----------
 # Example of a submission script for the EPFL SCITAS cluster:
-#!/bin/bash
 
 # Directory where the job will be executed and where the output files will be written:
 # Use /home to have back up files (100GB), else use /scratch
@@ -36,7 +37,7 @@
 python /Users/aubinsabatier/Desktop/EPFLMaster/MA2/Deep_Learning/Marked_exercises_submission2_lecture10/main.py
 
 # ---------- Check the job status ----------
-# ATTENTION: keep track of the job ID (2086021)
+# ATTENTION: keep track of the job ID (2087187)
 # Squeue: list all your jobs and their status (if none it means the job is running or finished)
 # squeue -A ee-559: list all the jobs of the course
 # scancel <JOB_ID>: cancel a job
