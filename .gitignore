@@ -5,8 +5,10 @@ CLIP/CLIP_B_trained.pth
 CLIP/CLIP_A_trained.pth
 CLIP/CLIP_W_trained.pth
 CLIP/CLIP_M_trained.pth
+CLIP/.DS_Store
 BLIP/BLIP_trained.pth
 BLIP/BLIP_B_trained.pth
 BLIP/BLIP_A_trained.pth
 BLIP/BLIP_W_trained.pth
 BLIP/BLIP_M_trained.pth
+BLIP/.DS_Store
