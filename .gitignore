@@ -12,3 +12,10 @@ BLIP/BLIP_A_trained.pth
 BLIP/BLIP_W_trained.pth
 BLIP/BLIP_M_trained.pth
 BLIP/.DS_Store
+VBERT/VBERT_trained.pth
+VBERT/VBERT_B_trained.pth
+VBERT/VBERT_A_trained.pth
+VBERT/VBERT_W_trained.pth
+VBERT/VBERT_M_trained.pth
+VBERT/.DS_Store
+Scitas/.DS_Store
