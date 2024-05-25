@@ -19,4 +19,9 @@ VBERT/VBERT_A_trained.pth
 VBERT/VBERT_W_trained.pth
 VBERT/VBERT_M_trained.pth
 VBERT/.DS_Store
+ALIGN/ALIGN_B_trained.pth
+ALIGN/ALIGN_A_trained.pth
+ALIGN/ALIGN_W_trained.pth
+ALIGN/ALIGN_M_trained.pth
+ALIGN/.DS_STore
 Scitas/.DS_Store
