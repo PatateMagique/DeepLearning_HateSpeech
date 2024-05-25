@@ -12,11 +12,10 @@ Code implementation for our group mini project of course EE-559 (4 ECTS - spring
 
 1.
 ```
-sudo zerotier-cli join 856127940c82f9a4
+test
 ```
 
 2. SSH into the Jetson Nano:
 ```
-ssh jetson@nano.local
-psswd: jetson
+test2
 ```
