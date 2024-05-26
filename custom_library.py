@@ -155,6 +155,27 @@ def test(model: nn.Module, loader: DataLoader, device: torch.device, return_conf
         return f1, loss, confidences
     else:
         return f1, loss
+    
+def test_ensemble(loader: DataLoader, ensemble_predictions: list):
+    """The test function, computes the F1 score using ensemble predictions on the test_loader
+
+    Args:
+        loader (DataLoader): The test data loader to iterate on the dataset to test
+        ensemble_predictions (list of int): List of ensemble predictions for each sample in the dataset
+
+    Returns:
+        f1 (float): The F1 score using the ensemble predictions
+    """
+    labels = []
+
+    for batch in loader:
+        _, _, batch_labels = batch
+        labels.extend(batch_labels.numpy())
+
+    # Compute the F1 score using the ensemble predictions and true labels
+    f1 = f1_score(labels, ensemble_predictions, average="macro")
+    
+    return f1
 
 def train(model : nn.Module, train_loader : DataLoader, val_loader : DataLoader, n_epochs : int, optimizer : torch.optim.Optimizer, device : torch.device, scheduler = None):
     """Trains the neural network self.model for n_epochs using a given optimizer on the training dataset.
@@ -348,3 +369,16 @@ def predict_image2(model: nn.Module, loader: DataLoader, device: torch.device, i
             axs[i].set_title(f'True: {true_label}, Pred: {predicted_label}\nConfidence: {confidence:.2f}')
             axs[i].axis('off')
         plt.show()
+
+def get_ensemble_predictions(confidences_A, confidences_W, confidences_M):
+    ensemble_predictions = []
+    num_samples = len(confidences_A)
+    
+    for i in range(num_samples):
+        # if one model as a confidence above 0.5, we predict 1
+        if confidences_A[i] > 0.5 or confidences_W[i] > 0.5 or confidences_M[i] > 0.5:
+            ensemble_predictions.append(1)
+        else:
+            ensemble_predictions.append(0)
+    
+    return ensemble_predictions
