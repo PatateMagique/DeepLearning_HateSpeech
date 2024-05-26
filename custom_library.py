@@ -1,4 +1,5 @@
 import torch
+import random
 import inspect
 import numpy as np
 import torch.nn as nn
@@ -313,37 +314,37 @@ def predict_image2(model: nn.Module, loader: DataLoader, device: torch.device, i
     """
     model.eval()
 
-    # Only process the first batch
-    for batch in loader:
-        images, texts, labels = batch
-        images = images.squeeze(1).to(device)
-        texts = {key: value.to(device) for key, value in texts.items()}
-        labels = labels.to(device)
-        
-        # Forward pass
-        preds, _ = model(pixel_values=images, input_ids=texts["input_ids"], attention_mask=texts["attention_mask"])
-        
-        # Sigmoid for binary classification to get confidence score
-        confidences = torch.sigmoid(preds)[:, 1].cpu().detach().numpy()  # Confidence for class 1
-        
-        if show:
-            fig, axs = plt.subplots(1, 4, figsize=(20, 5))
-            fig.suptitle(f'Model: {model_name}_{topic_name}')  # Add title to the entire plot
-            for i in range(4):
-                idx = index + i
-                if idx >= len(images):
-                    break
-                true_label = labels[idx].item()
-                predicted_label = preds.argmax(1)[idx].item()
-                confidence = confidences[idx]
+    # Convert the loader to a list and select a random batch
+    batches = list(loader)
+    batch = random.choice(batches)
 
-                # Plot the image
-                image = images[idx].cpu().numpy().transpose(1, 2, 0)  # Assuming images are in (C, H, W) format
-                image = np.clip(image, 0, 1)  # Ensure image is in the correct range
+    images, texts, labels = batch
+    images = images.squeeze(1).to(device)
+    texts = {key: value.to(device) for key, value in texts.items()}
+    labels = labels.to(device)
+    
+    # Forward pass
+    preds, _ = model(pixel_values=images, input_ids=texts["input_ids"], attention_mask=texts["attention_mask"])
+    
+    # Sigmoid for binary classification to get confidence score
+    confidences = torch.sigmoid(preds)[:, 1].cpu().detach().numpy()  # Confidence for class 1
+    
+    if show:
+        fig, axs = plt.subplots(1, 4, figsize=(20, 5))
+        fig.suptitle(f'Model: {model_name}_{topic_name}')  # Add title to the entire plot
+        for i in range(4):
+            idx = index + i
+            if idx >= len(images):
+                break
+            true_label = labels[idx].item()
+            predicted_label = preds.argmax(1)[idx].item()
+            confidence = confidences[idx]
 
-                axs[i].imshow(image)
-                axs[i].set_title(f'True: {true_label}, Pred: {predicted_label}\nConfidence: {confidence:.2f}')
-                axs[i].axis('off')
-            plt.show()
-        
-        break  # Exit after processing the first batch
+            # Plot the image
+            image = images[idx].cpu().numpy().transpose(1, 2, 0)  # Assuming images are in (C, H, W) format
+            image = np.clip(image, 0, 1)  # Ensure image is in the correct range
+
+            axs[i].imshow(image)
+            axs[i].set_title(f'True: {true_label}, Pred: {predicted_label}\nConfidence: {confidence:.2f}')
+            axs[i].axis('off')
+        plt.show()
