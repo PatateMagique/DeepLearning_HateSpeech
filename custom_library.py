@@ -65,23 +65,92 @@ class ModelForClassification(nn.Module):
         return logits, loss
 
 def create_model(model_name, model, topic_initial, device):
+    """
+    Create a model with specified layers unfrozen for training.
     
-    # Freeze all parameters in the ALIGN model
-    for param in model.parameters():
-        param.requires_grad = True
+    Args:
+        model_name (str): Name of the model ("CLIP", "BLIP", or "ALIGN").
+        model (nn.Module): The model instance.
+        topic_initial (str): The topic initial.
+        device (torch.device): The device to move the model to.
+        layers_to_unfreeze (list, optional): List of layer names or indices to unfreeze. Defaults to None.
+    
+    Returns:
+        nn.Module: The created model with specified layers unfrozen.
+    """
 
-    # Add the classification head
-    model = ModelForClassification(model, model_name)
+    if model_name == "CLIP":
+        # For CLIP, unfreeze all parameters
+        for param in model.parameters():
+            param.requires_grad = True
 
-    # Unfreeze the classification head
-    for param in model.classifier.parameters():
-        param.requires_grad = True
+        # Add the classification head
+        model = ModelForClassification(model, model_name)
+
+        # Unfreeze the classification head
+        for param in model.classifier.parameters():
+            param.requires_grad = True
+
+    elif model_name == "BLIP":
+        # Freeze all parameters
+        for param in model.parameters():
+            param.requires_grad = False
+
+        # Add the classification head
+        model = ModelForClassification(model, model_name)
+
+        # Unfreeze the classification head
+        for param in model.classifier.parameters():
+            param.requires_grad = True
+
+        try:
+            vision_layers = model.model.vision_model.encoder.layers
+            text_layers   = model.model.text_decoder.bert.encoder.layer
+        except AttributeError:
+            raise AttributeError("Unable to locate the layers in the vision model.")
+
+        for i in range(7, 11):
+            for param in vision_layers[i].parameters():
+                param.requires_grad = False
+            for param in text_layers[i].parameters():
+                param.requires_grad = False
+    
+    elif model_name == "ALIGN":
+
+        # Freeze all parameters
+        for param in model.parameters():
+            param.requires_grad = False
+
+        # Add the classification head
+        model = ModelForClassification(model, model_name)
+
+        # Unfreeze the classification head
+        for param in model.classifier.parameters():
+            param.requires_grad = True
+
+        try:
+            vision_layers  = model.model.vision_model.encoder.blocks
+            text_layers = model.model.text_model.encoder.layer
+        except AttributeError:
+            raise AttributeError("Unable to locate the layers in the vision model.")
+
+        for i in range(45, 54):
+            for param in vision_layers[i].parameters():
+                param.requires_grad = True
+        for i in range(7, 11):
+            for param in text_layers[i].parameters():
+                param.requires_grad = True
 
     model = model.to(device)
     
-    print(f"Succesfully created {model_name}_{topic_initial}.")
+    print(f"Successfully created {model_name}_{topic_initial}.")
 
     return model
+
+def unfreeze_layers(model, layers):
+        for name, param in model.named_parameters():
+            if any(layer in name for layer in layers):
+                param.requires_grad = True
 
 def collate_fn(batch):
     images = torch.stack([item[0] for item in batch])
