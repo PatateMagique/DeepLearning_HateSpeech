@@ -23,5 +23,6 @@ ALIGN/ALIGN_B_trained.pth
 ALIGN/ALIGN_A_trained.pth
 ALIGN/ALIGN_W_trained.pth
 ALIGN/ALIGN_M_trained.pth
-ALIGN/.DS_STore
+ALIGN/.DS_Score
 Scitas/.DS_Store
+__pycache__

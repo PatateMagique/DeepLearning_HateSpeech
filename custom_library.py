@@ -184,56 +184,59 @@ def train(model : nn.Module, train_loader : DataLoader, val_loader : DataLoader,
     val_f1s = []
     f1 = 0
     val_loss = 0
+    try:
+        for epoch in range(n_epochs):
+            running_loss = 0.0
+            for batch in train_loader:
+                images, texts, labels = batch
+                images = images.squeeze(1).to(device)
+                texts = {key: value.to(device) for key, value in texts.items()}
+                labels = labels.to(device)
 
-    for epoch in range(n_epochs):
-        running_loss = 0.0
-        for batch in train_loader:
-            images, texts, labels = batch
-            images = images.squeeze(1).to(device)
-            texts = {key: value.to(device) for key, value in texts.items()}
-            labels = labels.to(device)
+                # Forward pass
 
-            # Forward pass
+                # Get the parameters of the model's forward method
+                forward_params = inspect.signature(model.forward).parameters
 
-            # Get the parameters of the model's forward method
-            forward_params = inspect.signature(model.forward).parameters
+                # Check if 'labels' is in the parameters
+                if 'labels' in forward_params:
+                    outputs, _ = model(pixel_values=images, input_ids=texts["input_ids"], attention_mask=texts["attention_mask"], labels=labels)
+                else:
+                    outputs, _ = model(pixel_values=images, input_ids=texts["input_ids"], attention_mask=texts["attention_mask"])
+                
+                loss = F.cross_entropy(outputs, labels)
+                
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
 
-            # Check if 'labels' is in the parameters
-            if 'labels' in forward_params:
-                outputs, _ = model(pixel_values=images, input_ids=texts["input_ids"], attention_mask=texts["attention_mask"], labels=labels)
-            else:
-                outputs, _ = model(pixel_values=images, input_ids=texts["input_ids"], attention_mask=texts["attention_mask"])
-            
-            loss = F.cross_entropy(outputs, labels)
-            
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+                running_loss += loss.item()
 
-            running_loss += loss.item()
+            train_losses.append(running_loss / len(train_loader))
 
-        train_losses.append(running_loss / len(train_loader))
+            with torch.no_grad():
+                [f1, val_loss] = test(model, val_loader, device)
+                val_f1s.append(f1)
+                val_losses.append(val_loss)
 
-        with torch.no_grad():
-            [f1, val_loss] = test(model, val_loader, device)
-            val_f1s.append(f1)
-            val_losses.append(val_loss)
+                scheduler.step(val_loss)
+                current_lr = scheduler.optimizer.param_groups[0]['lr']
 
-            scheduler.step(val_loss)
-            current_lr = scheduler.optimizer.param_groups[0]['lr']
+                if f1 > best_f1: 
+                    best_model = model.state_dict()
+                    best_f1 = f1
+                    best_epoch = epoch + 1
 
-            if f1 > best_f1: 
-                best_model = model.state_dict()
-                best_f1 = f1
-                best_epoch = epoch + 1
-
-        print(f'Epoch {epoch + 1} - F1: {f1:.3f} - Validation Loss: {val_loss:.3f} - Training Loss: {loss:.3f} - LR: {current_lr:.6f}')
+            print(f'Epoch {epoch + 1} - F1: {f1:.3f} - Validation Loss: {val_loss:.3f} - Training Loss: {loss:.3f} - LR: {current_lr:.6f}')
+    except KeyboardInterrupt:
+        print("Training interrupted by user.")
+        return best_model, best_f1, best_epoch, val_f1s, val_losses, train_losses
 
     return best_model, best_f1, best_epoch, val_f1s, val_losses, train_losses
 
 
     
-def plot_training(best_epoch: int, val_accs: list, val_loss: list, train_loss: list):
+def plot_training(best_epoch: int, val_accs: list, val_loss: list, train_loss: list, model_name: str):
     """Plot training results of linear classifier
     
     Args:
@@ -244,7 +247,9 @@ def plot_training(best_epoch: int, val_accs: list, val_loss: list, train_loss: l
     """
 
     # Create plot
-    _, axes = plt.subplots(1, 2, figsize=(12, 4))
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+    fig.suptitle(f"{model_name} training results", fontsize=16)
+
     es = np.arange(1, len(val_accs)+1)
     # Plot F1 score
     axes[0].plot(es, val_accs, label="Val")
@@ -264,6 +269,7 @@ def plot_training(best_epoch: int, val_accs: list, val_loss: list, train_loss: l
     axes[1].legend()
     
     plt.tight_layout()
+    plt.subplots_adjust(top=0.88)  # Adjust the top padding to make room for the suptitle
 
 def predict_image(model: nn.Module, loader: DataLoader, device: torch.device, index: int, show: bool = True):
 

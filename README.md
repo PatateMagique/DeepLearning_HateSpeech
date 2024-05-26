@@ -1,4 +1,4 @@
-# Deep Learning and Hate Speech
+# Improving Hateful Memes Identification With Ensemble Learning
 
 Code implementation for our group mini project of course EE-559 (4 ECTS - spring 2024).
 

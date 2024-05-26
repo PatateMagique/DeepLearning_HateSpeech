@@ -50,7 +50,7 @@ def count_keywords(file_path, keywords, verbosity = 0):
             harm_rate = harm_rate * 100
         keyword_info[topic]['harm_rate'] = harm_rate
     if verbosity > 0:
-        print("File:", file_path[14:])
+        print(f"File: {file_path[14:]} - Total Memes: {len(open(file_path).readlines())}")
         for topic, info in keyword_info.items():
             print(f"{topic.ljust(8)}:  {str(info['count']).ljust(3)}  Harm Rate:  {info['harm_rate']:.2f}%  Label 0:  {str(info['label_0']).ljust(3)}  Label 1:  {info['label_1']}")
     return keyword_info
@@ -178,4 +178,4 @@ def load_data(json_path, list, img_path):
         item = {"image": image, "text": text, "label": label}
         list.append(item)
 
-    print(f"Loaded {len(list)} memes from {json_path[17:]}")
+    print(f"Loaded {len(list)} memes from {json_path[14:]}")
