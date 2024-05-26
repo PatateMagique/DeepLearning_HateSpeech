@@ -16,7 +16,6 @@ In the main file, the 'custom_library.py' file is imported. It contains all the 
 présentation des fichiers : man, imports, jsonl
 
 # 3. General structure of the repository
-'''
 .
 └── DeepLearning_HateSpeech/
     ├── ALIGN
@@ -38,7 +37,6 @@ présentation des fichiers : man, imports, jsonl
     ├── Detecting Hate Speech in Multimodal Memes.pdf
     ├── main.ipynb
     └── README.md
-'''
 
 Please make sure that this tree structure is correct so that the code can run correctly and the explanations make sense.
 
