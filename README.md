@@ -5,7 +5,7 @@ This GitHub repository presents the research of group 31 on the subject "Improvi
 
 
 # 1. How to get the dataset ?
-The dataset can be found on the original "Hateful Memes Challenge" website. In the download section, you are asked fill in your full name, email and affiliation informations.
+The dataset can be found on the original "Hateful Memes Challenge" [website](https://hatefulmemeschallenge.com). In the download section, you are asked fill in your full name, email and affiliation informations.
 The affiliation should be set to 'n/a', in lower case, otherwise the download will fail.
 The dataset folder 'hateful_memes' should be located at the root of the repository folder, i.e. beside this actual file.
 The final folder should contain a folder called 'img' and files 'dev_seen.jsonl', 'dev_unseen.jsonl', 'test_seen.jsonl', 'test_unseen.jsonl' and 'train.jsonl'.
@@ -54,6 +54,10 @@ This project requires the training of 12 large Multimodal models. This can be do
 
 - CLIP (650 MB x4):  Training the 3 sub-models (for the subsets 'African', 'Muslim' and 'Women'), training the base model (union of the 3 subsets), testing on the unseen test set is done in ~15 min for 5 epochs on an Apple M2 Pro (12 CPU cores and 19 GPU cores), 16Go RAM. All parameters are un-frozzen.
 
-- BLIP  (990 MB x4):  Fine-tuning the classification head, the last 4 layers of the vision model and text decoder for the 4 models for 5 epochs and test on unseen data runs in ~60min on the configuration presented above. Global retraining of the model requires more than 29Go RAM and more powerfull GPU.
+- BLIP  (990 MB x4):  Fine-tuning the classification head, the last 4 layers of the vision model and text decoder for the 4 models for 5 epochs and test on unseen data runs in ~60min on the configuration presented above. Global retraining of the model requires more than 29Go RAM and more powerful GPU.
 
-- ALIGN (690 MB x4):  Fine-tuning the classification head, the last 9 layers of the vision model and last 4 of the text decoder for the 4 models for 5 epochs and test on unseen data runs in ~45min on the configuration presented above. Global retraining of the model requires more than 25Go RAM and a more powerfull GPU.
+- ALIGN (690 MB x4):  Fine-tuning the classification head, the last 9 layers of the vision model and last 4 of the text decoder for the 2 models for 5 epochs and test on unseen data runs in ~30min on the configuration presented above. Global retraining of the model requires more than 20Go RAM and a more powerful GPU.
+
+# 5. Code demonstration
+
+A screecast of our code running can be found [here](https://drive.google.com/drive/folders/1osaqP4ldN92U1EOQLPcktUfZ9bvtTNlm?usp=share_link)

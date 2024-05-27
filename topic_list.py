@@ -68,9 +68,9 @@ def create_class_files(file_path, keyword_info, destination_dir, mode):
         None
     """
     if mode == "train":
-        threshold = 400
+        threshold = 500
     else:
-        threshold = 46
+        threshold = 50
 
     # Load all objects from the original file into a list
     with open(file_path, 'r') as f:

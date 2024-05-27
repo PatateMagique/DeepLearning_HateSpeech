@@ -9,6 +9,9 @@ from sklearn.metrics import f1_score
 from torch.utils.data import Dataset, DataLoader
 
 class ImageCaptioningDataset(Dataset):
+    """
+    A PyTorch Dataset class for processing image-caption pairs with theis labels.
+    """
     def __init__(self, dataset, processor):
         self.dataset = dataset
         self.processor = processor
@@ -24,10 +27,8 @@ class ImageCaptioningDataset(Dataset):
 
         # Process the image, pt = PyTorch tensors
         processed_image = self.processor(images=image, return_tensors="pt")["pixel_values"]
-
         # Process the text, pt = PyTorch tensors
         processed_text = self.processor(text=[text], return_tensors="pt", padding=True, truncation=True)
-
         # Process the label
         label = torch.tensor(label)
 
@@ -38,14 +39,15 @@ class ModelForClassification(nn.Module):
         super(ModelForClassification, self).__init__()
         self.model = model
         self.model_name = model_name
-        if model_name == "BLIP":
+        if model_name == "BLIP": # for BLIP model, the hidden size is different
             self.classifier = nn.Linear(self.model.config.text_config.hidden_size, 2)
-        else:
+        else: # For CLIP and ALIGN models
             self.classifier = nn.Linear(self.model.config.projection_dim, 2)
+
         self.loss_fn = nn.CrossEntropyLoss()  # Loss function for classification
 
     def forward(self, input_ids, pixel_values, attention_mask=None, labels=None):
-        if self.model_name == "BLIP":
+        if self.model_name == "BLIP": # For BLIP model, the forward method is different
             outputs = self.model(input_ids=input_ids, pixel_values=pixel_values, attention_mask=attention_mask, return_dict=True)
             text_embeds = outputs.last_hidden_state.mean(dim=1)
             image_embeds = outputs.pooler_output if 'pooler_output' in outputs else outputs.last_hidden_state.mean(dim=1)
@@ -53,8 +55,8 @@ class ModelForClassification(nn.Module):
             outputs = self.model(input_ids=input_ids, pixel_values=pixel_values, attention_mask=attention_mask)
             text_embeds = outputs.text_embeds
             image_embeds = outputs.image_embeds
-
-        combined_embeds = text_embeds + image_embeds  # Combining embeddings; you can choose a different strategy
+        # Concatenate the text and image embeddings
+        combined_embeds = text_embeds + image_embeds
 
         logits = self.classifier(combined_embeds)
         
@@ -147,12 +149,17 @@ def create_model(model_name, model, topic_initial, device):
 
     return model
 
-def unfreeze_layers(model, layers):
-        for name, param in model.named_parameters():
-            if any(layer in name for layer in layers):
-                param.requires_grad = True
-
 def collate_fn(batch):
+    """
+    The collate function for the DataLoader, concatenates the texts and pads them to the maximum length in the batch.
+    Args:
+        batch (list): A list of tuples (image, text, label)
+
+    Returns:
+        images (torch.Tensor): A tensor of images
+        collated_texts (dict): A dictionary of concatenated texts
+        labels (torch.Tensor): A tensor of labels
+    """
     images = torch.stack([item[0] for item in batch])
     
     # Collect all text dictionaries
@@ -172,8 +179,8 @@ def collate_fn(batch):
 
 @torch.no_grad()
 def test(model: nn.Module, loader: DataLoader, device: torch.device, return_confidences: bool = False):
-    """The test function, computes the F1 score of the current model on the test_loader
-
+    """
+    The test function, computes the F1 score of the current model on the test_loader
     Args:
         model (nn.Module): The model to evaluate
         loader (DataLoader): The test data loader to iterate on the dataset to test
@@ -226,8 +233,8 @@ def test(model: nn.Module, loader: DataLoader, device: torch.device, return_conf
         return f1, loss
     
 def test_ensemble(loader: DataLoader, ensemble_predictions: list):
-    """The test function, computes the F1 score using ensemble predictions on the test_loader
-
+    """
+    The test_ensemble function computes the F1 score using ensemble predictions on the test_loader
     Args:
         loader (DataLoader): The test data loader to iterate on the dataset to test
         ensemble_predictions (list of int): List of ensemble predictions for each sample in the dataset
@@ -247,7 +254,8 @@ def test_ensemble(loader: DataLoader, ensemble_predictions: list):
     return f1
 
 def train(model : nn.Module, train_loader : DataLoader, val_loader : DataLoader, n_epochs : int, optimizer : torch.optim.Optimizer, device : torch.device, scheduler = None):
-    """Trains the neural network self.model for n_epochs using a given optimizer on the training dataset.
+    """
+    Trains the neural network self.model for n_epochs using a given optimizer on the training dataset.
     Outputs the best model in terms of F1 score on the validation dataset.
 
     Args:
@@ -328,8 +336,8 @@ def train(model : nn.Module, train_loader : DataLoader, val_loader : DataLoader,
 
     
 def plot_training(best_epoch: int, val_accs: list, val_loss: list, train_loss: list, model_name: str):
-    """Plot training results of linear classifier
-    
+    """
+    Plot training results of linear classifier training.
     Args:
         best_epoch (int): Best epoch
         val_accs (List): (E,) list of validation measures for each epoch
@@ -362,39 +370,9 @@ def plot_training(best_epoch: int, val_accs: list, val_loss: list, train_loss: l
     plt.tight_layout()
     plt.subplots_adjust(top=0.88)  # Adjust the top padding to make room for the suptitle
 
-def predict_image(model: nn.Module, loader: DataLoader, device: torch.device, index: int, show: bool = True):
-
-    model.eval()
-    
-    # Only process the first batch
-    for batch in loader:
-        images, texts, labels = batch
-        images = images.squeeze(1).to(device)
-        texts = {key: value.to(device) for key, value in texts.items()}
-        labels = labels.to(device)
-        
-        # Forward and loss
-        preds, _ = model(pixel_values=images, input_ids=texts["input_ids"], attention_mask=texts["attention_mask"])
-
-        true_label = labels[index].item()
-        predicted_label = preds.argmax(1)[index].item()
-
-        if show:
-            # Plot the specified image, its prediction, and the true label
-            image = images[index].cpu().numpy().transpose(1, 2, 0)  # Assuming images are in (C, H, W) format
-            # Ensure image is in the correct range
-            image = np.clip(image, 0, 1)
-
-            plt.imshow(image)
-            plt.title(f'True Label: {true_label}, Predicted Label: {predicted_label}')
-            plt.axis('off')
-            plt.show()
-        
-        break  # Exit after processing the first batch
-
-def predict_image2(model: nn.Module, loader: DataLoader, device: torch.device, index: int, show: bool = True, model_name: str = None, topic_name: str = None):
-    """Predict and plot 4 images from the dataset starting at a given index, displaying the confidence and labels.
-
+def predict_image(model: nn.Module, loader: DataLoader, device: torch.device, index: int, show: bool = True, model_name: str = None, topic_name: str = None):
+    """
+    Predict and plot 4 images from the dataset starting at a given index, displaying the confidence and labels.
     Args:
         model (nn.Module): The model to use for predictions.
         loader (DataLoader): The data loader to fetch the dataset.
@@ -440,6 +418,16 @@ def predict_image2(model: nn.Module, loader: DataLoader, device: torch.device, i
         plt.show()
 
 def get_ensemble_predictions(confidences_A, confidences_W, confidences_M):
+    """
+    Get the ensemble predictions based on the confidences of the three models.
+    Args:
+        confidences_A (list of float): List of confidences for model A.
+        confidences_W (list of float): List of confidences for model W.
+        confidences_M (list of float): List of confidences for model M.
+    
+    Returns:
+        ensemble_predictions (list of int): List of ensemble predictions.
+    """
     ensemble_predictions = []
     num_samples = len(confidences_A)
     
