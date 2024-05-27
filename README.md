@@ -22,7 +22,7 @@ The final folder should contain a folder called 'img' and files 'dev_seen.jsonl'
 
 Please make sure before running main.ipynb, that your tree structure is the same as the one presented here:
 
-'''code
+```code
 .
 └── DeepLearning_HateSpeech/
     ├── ALIGN
@@ -44,7 +44,7 @@ Please make sure before running main.ipynb, that your tree structure is the same
     ├── Detecting Hate Speech in Multimodal Memes.pdf
     ├── main.ipynb
     └── README.md
-'''
+```
 
 # 4. Hardware requirements :
 
@@ -52,8 +52,8 @@ Please make sure before running main.ipynb, that your tree structure is the same
 
 This project requires the training of 12 large Multimodal models. This can be done locally, but sufficient storage capacyty and computing power are required.
 
-- CLIP (650 MB x4):  Training the 3 sub-models (for the subsets 'African', 'Muslim' and 'Women'), training the base model (union of the 3 subsets), testing on the unseen test set is done in ~10 min for 5 epochs on an Apple M2 Pro (12 CPU cores and 19 GPU cores), 16Go RAM. All parameters are un-frozzen.
+- CLIP (650 MB x4):  Training the 3 sub-models (for the subsets 'African', 'Muslim' and 'Women'), training the base model (union of the 3 subsets), testing on the unseen test set is done in ~15 min for 5 epochs on an Apple M2 Pro (12 CPU cores and 19 GPU cores), 16Go RAM. All parameters are un-frozzen.
 
-- BLIP  (945 MB x4):  Fine-tuning the classification head, the last 4 layers of the vision model and text decoder for the 4 models for 5 epochs and test on unseen data runs in ~45min on the configuration presented above. Global retraining of the model requires more than 29Go RAM and more powerfull GPU.
+- BLIP  (990 MB x4):  Fine-tuning the classification head, the last 4 layers of the vision model and text decoder for the 4 models for 5 epochs and test on unseen data runs in ~60min on the configuration presented above. Global retraining of the model requires more than 29Go RAM and more powerfull GPU.
 
 - ALIGN (690 MB x4):  Fine-tuning the classification head, the last 9 layers of the vision model and last 4 of the text decoder for the 4 models for 5 epochs and test on unseen data runs in ~45min on the configuration presented above. Global retraining of the model requires more than 25Go RAM and a more powerfull GPU.
