@@ -60,4 +60,4 @@ This project requires the training of 12 large Multimodal models. This can be do
 
 # 5. Code demonstration
 
-A screecast of our code running can be found [here](https://drive.google.com/drive/folders/1osaqP4ldN92U1EOQLPcktUfZ9bvtTNlm?usp=share_link)
+A screecast of our code running and our trained saved weights can be found [here](https://drive.google.com/drive/folders/1osaqP4ldN92U1EOQLPcktUfZ9bvtTNlm?usp=share_link)
